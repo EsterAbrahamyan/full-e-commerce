@@ -12,6 +12,7 @@ user_router.delete ('/delete/:id',Users.get_Users_delete)
 
 user_router.post('/register',Users.Users_register)
 user_router.post('/login',Users.Users_login)
+user_router.get ('/verify/:token',Users.verify)
 
 
 

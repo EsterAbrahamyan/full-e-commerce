@@ -25,47 +25,85 @@ function get_Product_id(req, res) {
 
 }
 
-function get_Product_update(req, res) {
-    const { id } = req.params
-    const { name, description, price,image, underCategory_id } = req.body
-    let product = Product.update(
-        { name, description, price,image, underCategory_id },
-        {
-            where: { id },
-            include: underCategory
-        })
-        .then((prod) => {
-            res.json({ status: 'updated' })
-        }).catch((err) => {
-            res.status(500).json({ error: err.message })
-        })
+// function get_Product_update(req, res) {
+//     const { id } = req.params
+//     const { name, description, price,underCategory_id } = req.body
+//     let product = Product.update(
+//         { name, description, price, underCategory_id },
+//         {
+//             where: { id },
+//             include: underCategory
+//         })
+//         const imgUrl = `${req.protocol}://${req.hostname}:6005/${image}`;
+//         data.image = imgUrl;
+//         .then((prod) => {
+//             res.json({ status: 'updated' })
+//         }).catch((err) => {
+//             res.status(500).json({ error: err.message })
+//         })
 
+// }
+
+// async function get_Product_update(req, res){
+//     const { id } = req.params
+//     const{name, price,description,underCategory_id} =req.body
+//     const image = `uploads/${req.file.filename}`;
+//     const data = await Product.update({name, price,description,underCategory_id},
+//         {
+//                         where: { id },
+//                         include: underCategory
+                    
+//         })
+    
+//     const imgUrl = `${req.protocol}://${req.hostname}:6005/${image}`;
+//     console.log(imgUrl)
+//         data.image = imgUrl;
+//         return res.status(201).json({ message: 'Product updated'});
+// }
+async function get_Product_update(req, res) {
+    try {
+        const { id } = req.params;
+        const { name, description, price, underCategory_id } = req.body;
+
+        let image = '';
+        if (req.file) {
+            image = `uploads/${req.file.filename}`;
+        }
+
+        // Update the product
+        await Product.update(
+            { name, description, price, underCategory_id, image },
+            { where: { id } }
+        );
+
+        // Find the updated product
+        let product = await Product.findByPk(id, { include: 'underCategory' });
+        if (!product) {
+            throw new Error('Product not found');
+        }
+
+        // Update the image URL
+        const imgUrl = `${req.protocol}://${req.hostname}:6005/${image}`;
+        product.image = imgUrl;
+        await product.save();
+
+        return res.json({ status: 'updated'});
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
 }
 
-function get_Product_post(req, res) {
-    upload.single('image')(req, res, function (err) {
-        if (err) {
-          // Handle any multer upload errors
-          res.status(500).json({ error: err.message });
-          return;
-        }
-    
-        // Access the uploaded file using req.file
-        const { name, description, price, underCategory_id } = req.body;
-        const image = req.file;
-   Product.create(
-        { name, description, price,image:image.filename, underCategory_id },
-        {
-            // where: { id },
-            include: underCategory
-        })
-        .then((prod) => {
-            res.json(prod)
-        }).catch((err) => {
-            res.status(500).json({ error: err.message })
-        })
-    })
 
+
+async function get_Product_post(req, res){
+    const{name, price,description,underCategory_id} =req.body
+    const image = `uploads/${req.file.filename}`;
+    const data = await Product.create({name, price,description,underCategory_id})
+    
+    const imgUrl = `${req.protocol}://${req.hostname}:6005/${image}`;
+    console.log(imgUrl)
+        data.image = imgUrl;
+        return res.status(201).json({ message: 'Product created', data });
 }
 
 function get_Product_delete(req, res) {
