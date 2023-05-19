@@ -2,15 +2,27 @@ const { Product, underCategory } = require('../models')
 const upload = require ('../jwt/uploads')
 
 
-function get_Product(req, res) {
-   Product.findAll({include:underCategory})
-        .then((prod) => {
-            res.json(prod)
-        }).catch((err) => {
-            res.status(500).json({ error: err.message })
-        })
+// function get_Product(req, res) {
+//    Product.findAll({include:underCategory})
+//         .then((prod) => {
+//             res.json(prod)
+//         }).catch((err) => {
+//             res.status(500).json({ error: err.message })
+//         })
 
-}
+// }
+function get_Product(req,res){
+    const {limit, offset} = req.query
+    Product.count().then((count)=>{
+        Product.findAll({limit, offset},{include: underCategory})
+        .then((product)=>{
+            console.log(count)
+        res.json({product, count})
+    }).catch((err)=>{
+            res.status(500).json({error:err.message})
+        })
+})
+    }
 function get_Product_id(req, res) {
     const { id } = req.params
     let product = Product.findOne({
