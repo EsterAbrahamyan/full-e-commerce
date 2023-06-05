@@ -3,7 +3,7 @@ const {underCategory, Product,Category} = require ('../models')
 function get_underCategory (req, res) {
     underCategory.findAll({
         // where:{id}
-        include:Category
+        // include:Category
         
     })
     

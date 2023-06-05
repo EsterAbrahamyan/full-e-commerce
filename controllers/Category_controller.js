@@ -1,8 +1,8 @@
-const {undercategory, Category} = require ('../models')
+const {underCategory, Category} = require ('../models')
 
 
 function get_Category (req, res) {
-    Category.findAll() 
+    Category.findAll({include:underCategory}) 
     .then((category)=>{
      res.json(category)}).catch((err)=>{
          res.status(500).json({error:err.message})
@@ -21,18 +21,22 @@ function get_Category (req, res) {
          res.status(500).json({error:err.message})
      })
   }
+
+
+
   function get_Category_id(req,res){
     const {id} = req.params
-    Category.findOne({
-        where:{id},
-        include:undercategory
+    console.log(id)
+    Category.findOne({include:underCategory,where:{id}})
         
-    })
-    .then((category)=>{
+        
+        .then((category)=>{
         res.json(category)}).catch((err)=>{
             res.status(500).json({error:err.message})
         })
 }
+
+
 function get_Category_update(req, res) {
   const name = req.body.name
   const {id} = req.params
@@ -55,7 +59,7 @@ async function get_Category_delete(req,res){
     try {
         const category = await Category.findOne({
             where: { id },
-            include: undercategory
+            include: underCategory
         });
         
         if (category.undercategory.length > 0) {

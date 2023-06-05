@@ -5,7 +5,7 @@ const { authenticateToken } = require('../jwt/jwt_authenticate');
 
 category_router.get ('/',Category.get_Category)
 category_router.get ('/:id',Category.get_Category_id)
-category_router.post ('/new',authenticateToken,Category.get_Category_post)
+category_router.post ('/new',Category.get_Category_post)
 category_router.put ('/update/:id',authenticateToken,Category.get_Category_update)
 category_router.delete ('/delete/:id',authenticateToken,Category.get_Category_delete)
 
