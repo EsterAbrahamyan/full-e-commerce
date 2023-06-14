@@ -107,16 +107,27 @@ async function get_Product_update(req, res) {
 
 
 
-async function get_Product_post(req, res){
-    const{name, price,description,underCategory_id} =req.body
-    const image = `uploads/${req.file.filename}`;
-    const data = await Product.create({name, price,description,underCategory_id})
-    
-    const imgUrl = `${req.protocol}://${req.hostname}:6005/${image}`;
-    console.log(imgUrl)
+async function get_Product_post(req, res) {
+    try {
+        const { name, price, description, underCategory_id } = req.body;
+
+        let image = '';
+        if (req.file) {
+            image = `uploads/${req.file.filename}`;
+        }
+
+        const data = await Product.create({ name, price, description, underCategory_id, image });
+
+        const imgUrl = `${req.protocol}://${req.hostname}:6005/${image}`;
         data.image = imgUrl;
+        await data.save();
+
         return res.status(201).json({ message: 'Product created', data });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
 }
+
 
 function get_Product_delete(req, res) {
     const { id } = req.params;

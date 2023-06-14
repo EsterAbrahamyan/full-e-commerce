@@ -1,26 +1,31 @@
-const { CartItems } = require('../models')
+const { CartItems, Cart } = require('../models')
 
 
-function get_CartItems(req, res) {
-    CartItems.findAll()
-        .then((cartitems) => {
-            res.json(cartitems)
-        }).catch((err) => {
-            res.status(500).json({ error: err.message })
-        })
-
+ async function get_CartItems(req, res) {
+    try{
+        const cartItems = await  CartItems.findAll({include:[
+            {model: Cart},
+            {model: Product}
+        ]})
+        res.json(cartItems)
+    } catch(error){
+        res.status(500).json({error:error.message})
+    }
 }
-function get_CartItems_id(req, res) {
-    const { id } = req.params
-    CartItems.findOne({
-        where:{id}
-    })
-        .then((cartitems) => {
-            res.json(cartitems)
-        }).catch((err) => {
-            res.status(500).json({ eror: err.message })
-        })
 
+ async function get_CartItems_id(req, res) {
+    const { id } = req.params
+    try{
+        const cart = await Cart.findOne({where:{user_id:id}})
+        if(cart){
+            const cartItems = await CartItems.findAll({where:{cart_id: cart.id}, include: Product})
+        res.json(cartItems )
+        }else{
+            res.status(404).json({error: 'Cart not found'})
+        }
+    }catch(error){
+        res.status(500).json({error: error.message})
+    }
 }
 
 function get_CartItems_update(req, res) {
@@ -39,19 +44,32 @@ function get_CartItems_update(req, res) {
 
 }
 
-function get_CartItems_post(req, res) {
+async function get_CartItems_post(req, res) {
     // const { id } = req.params;
-    const { product_id,cart_id } = req.body;
-   CartItems.create(
-        { product_id,cart_id },
-        )
-        .then((cartitems) => {
-            res.json(cartitems)
-        }).catch((err) => {
-            res.status(500).json({ error: err.message })
-        })
-
-}
+    const { product_id, cart_id, quantity } = req.body;
+    try {
+      let cart = await Cart.findOne({ where: { user_id } });
+      if (!cart) {
+        cart = await Cart.create({ user_id });
+      }
+      let cartItem = await CartItems.findOne({
+        where: { cart_id: cart.id, product_id },
+      });
+      if (!cartItem) {
+        cartItem = await CartItems.create(
+          { product_id, cart_id, quantity }
+        );
+      } else {
+        cartItem.quantity += quantity;
+        await cartItem.save();
+      }
+      res.status(200).json({ message: 'Cart created successfully' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error creating cart' });
+    }
+  }
+  
 
 function get_CartItems_delete(req, res) {
     const { id } = req.params;

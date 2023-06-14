@@ -2,8 +2,8 @@ const {underCategory, Product,Category} = require ('../models')
 
 function get_underCategory (req, res) {
     underCategory.findAll({
-        // where:{id}
-        // include:Category
+        // where:{id},
+        include:Product
         
     })
     
@@ -54,25 +54,18 @@ function get_underCategory_post(req,res){
           })
   
   }
-  async function get_underCategory_delete(req,res){
+  async function get_underCategory_delete(req, res) {
     const { id } = req.params;
-    
+  
     try {
-        const undercategory = await underCategory.findOne({
-            where: { id },
-            include: Product
-        });
-        
-        if (undercategory.product.length > 0) {
-            res.status(400).json({ status: 'Cannot delete undercategory that has products' });
-        } else {
-            await underCategory.destroy({ where: { id } });
-            res.json({ message: 'underCategory deleted' });
-        }
+      await underCategory.destroy({ where: { id } });
+      res.json({ message: 'underCategory deleted' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+      res.status(500).json({ error: err.message });
     }
-    }
+  }
+  
+  
  module.exports={get_underCategory,
     get_underCategory_post,
     get_underCategory_id,

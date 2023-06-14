@@ -1,5 +1,5 @@
 const {underCategory, Category} = require ('../models')
-
+const upload = require ('../jwt/uploads')
 
 function get_Category (req, res) {
     Category.findAll({include:underCategory}) 
@@ -9,18 +9,19 @@ function get_Category (req, res) {
      })
      
  }
- function get_Category_post(req,res){
+ async function get_Category_post(req,res){
     // const { id } = req.params;
-    const { name} = req.body;
-    Category.create(
-        { name }
+    const name = req.body.name
+    const image = `uploads/${req.file.filename}`;
+    const data = await Category.create(
+        {name }
         // {where:{id}}
     ) 
-    .then((category)=>{
-     res.json(category)}).catch((err)=>{
-         res.status(500).json({error:err.message})
-     })
-  }
+    const imgUrl = `${req.protocol}://${req.hostname}:6005/${image}`;
+    console.log(imgUrl)
+        data.image = imgUrl;
+        return res.status(201).json({ message: 'Category created'});
+}
 
 
 
@@ -37,20 +38,42 @@ function get_Category (req, res) {
 }
 
 
-function get_Category_update(req, res) {
-  const name = req.body.name
-  const {id} = req.params
+async function get_Category_update(req, res) {
+  try {
+    const name = req.body.name
+    const {id} = req.params
 
-    Category.update(
-        { name },
+  let image = '';
+        if (req.file) {
+            image = `uploads/${req.file.filename}`;
+        }
+
+
+    await Category.update(
+        { name, image },
         {
             where: { id }
       })
-        .then((category) => {
-            res.json({ status: 'updated' })
-        }).catch((err) => {
-            res.status(500).json({ error: err.message })
-        })
+
+      let category = await Category.findByPk(id)
+      if(!category){
+        throw new Error('Category not found');
+      }
+
+      const imgUrl = `${req.protocol}://${req.hostname}:6005/${image}`;
+        category.image = imgUrl;
+        await category.save();
+
+        return res.json({ status: 'updated'});
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+
+        // .then((category) => {
+        //     res.json({ status: 'updated' })
+        // }).catch((err) => {
+        //     res.status(500).json({ error: err.message })
+        // })
 
 }
 async function get_Category_delete(req,res){
@@ -62,7 +85,7 @@ async function get_Category_delete(req,res){
             include: underCategory
         });
         
-        if (category.undercategory.length > 0) {
+        if (category.underCategories.length > 0) {
             res.status(400).json({ status: 'Cannot delete category that has undercategory' });
         } else {
             await Category.destroy({ where: { id } });
