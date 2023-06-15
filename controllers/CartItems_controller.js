@@ -28,25 +28,28 @@ const { CartItems, Cart } = require('../models')
     }
 }
 
-function get_CartItems_update(req, res) {
+async function get_CartItems_update(req, res) {
     const { id } = req.params
-    const { product_id,cart_id} = req.body
-    CartItems.update(
-        {  product_id,cart_id },
-        {
-            where: { id }
-        })
-        .then((cartitems) => {
-            res.json({ status: 'updated' })
-        }).catch((err) => {
-            res.status(500).json({ error: err.message })
-        })
-
+    const { product_id,cart_id, quantity} = req.body
+     try {
+        const cartItem = await CartItems.findByPk(id)
+        if(cartItem){
+            cartItem.cart_id = cart_id
+            cartItem.product_id = product_id
+            cartItem.quantity = quantity
+            await cartItem.save()
+                res.json(cartItem)
+         } else{
+            res.status(404).json({error:'CartItem not found'})
+         }
+    }catch(error){
+        req.status(500).json({error:error.message})
+    }
 }
 
 async function get_CartItems_post(req, res) {
     // const { id } = req.params;
-    const { product_id, cart_id, quantity } = req.body;
+    const { product_id, user_id, quantity } = req.body;
     try {
       let cart = await Cart.findOne({ where: { user_id } });
       if (!cart) {
@@ -57,7 +60,7 @@ async function get_CartItems_post(req, res) {
       });
       if (!cartItem) {
         cartItem = await CartItems.create(
-          { product_id, cart_id, quantity }
+          { product_id, cart_id: cart.id, quantity }
         );
       } else {
         cartItem.quantity += quantity;
@@ -69,6 +72,46 @@ async function get_CartItems_post(req, res) {
       res.status(500).json({ message: 'Error creating cart' });
     }
   }
+
+  async function incrementCartItem(req, res){
+    const {id} = req.params
+    const {quantity} = req.body
+    try{
+        const cartItem = await CartItems.findOne({where:{product_id:id}})
+        if(!cartItem){
+            return res.status(400).json({error:'CartItem not found'})
+        } 
+        if(cartItem.quantity > 0){
+            await CartItems.update({quantity:cartItem.quantity + quantity}, {where:{product_id:id}})
+            const updatedCartitems = await CartItems.findOne({where:{product_id:id}})
+            res.json({cartItem: updatedCartitems})
+        }else{
+            res.json({cartItem})
+        }
+    } catch(error){
+        res.status(500).json({error:error.message})
+    }
+}
+
+async function decrementCartItem(req, res){
+    const {id}=req.params
+    const {quantity} = req.body
+    try{
+        const cartItem = await CartItems.findOne({where:{product_id:id}})
+        if(!cartItem){
+            return res.status(400).json({error:"CartItem not found"})
+        }
+        if(cartItem.quantity > 1){
+            await CartItems.update({quantity:cartItem.quantity - quantity}, {where:{product_id:id}})
+            const updatedCartitems = await CartItems.findOne({where:{product_id:id}})
+            res.json({cartItem:updatedCartitems})
+        } else{
+            res.json({cartItem})
+        }
+    } catch(error){
+        res.status(500).json({error:error.message})
+    }
+}
   
 
 function get_CartItems_delete(req, res) {
@@ -88,5 +131,7 @@ module.exports = {
     get_CartItems_id,
     get_CartItems_update,
     get_CartItems_post,
-    get_CartItems_delete
+    get_CartItems_delete,
+    incrementCartItem,
+    decrementCartItem
 };

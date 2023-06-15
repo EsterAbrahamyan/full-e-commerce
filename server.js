@@ -8,7 +8,7 @@ const category_router=require("./routes/Category_route")
 const undercategory_router=require("./routes/underCategory_route")
 let bodyParser = require('body-parser') 
 let cors=require('cors');
-const user_router = require('./routes/Users_rout');
+const user_router = require('./routes/Users_route');
 const cart_router = require('./routes/Cart_route');
 const cartitems_router = require('./routes/CartItems_route');
 app.use(cors())

@@ -23,7 +23,7 @@ This project was built to help you start E-commerce cakesShop_backend with a boi
  * Multer
 
 ## Project Structure
-
+```
 ├── config
 │   └── config.json                          # Configuration file for the database connection
 ├── controllers
@@ -62,7 +62,8 @@ This project was built to help you start E-commerce cakesShop_backend with a boi
 ├── -uploads                                 # Downloaded Images of products and categories
 └── server.js                                # Entry point for the backend server
 
-                                   
+```
+
 ### Installing
 
 ```
