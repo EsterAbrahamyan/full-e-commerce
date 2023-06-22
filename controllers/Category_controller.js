@@ -9,19 +9,29 @@ function get_Category (req, res) {
      })
      
  }
- async function get_Category_post(req,res){
-    // const { id } = req.params;
-    const name = req.body.name
-    const image = `uploads/${req.file.filename}`;
-    const data = await Category.create(
-        {name }
-        // {where:{id}}
-    ) 
-    const imgUrl = `${req.protocol}://${req.hostname}:6005/${image}`;
-    console.log(imgUrl)
+ async function get_Category_post(req, res) {
+    try {
+      const name = req.body.name;
+      let image = null;
+  
+      if (req.file) {
+        image = `uploads/${req.file.filename}`;
+      }
+  
+      const data = await Category.create({ name, image });
+  
+      if (req.file) {
+        const imgUrl = `${req.protocol}://${req.hostname}:6005/${image}`;
         data.image = imgUrl;
-        return res.status(201).json({ message: 'Category created'});
-}
+        await data.save();
+      }
+  
+      return res.status(201).json({ message: 'Category created' });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  }
+  
 
 
 
@@ -69,11 +79,7 @@ async function get_Category_update(req, res) {
         return res.status(500).json({ error: err.message });
     }
 
-        // .then((category) => {
-        //     res.json({ status: 'updated' })
-        // }).catch((err) => {
-        //     res.status(500).json({ error: err.message })
-        // })
+    
 
 }
 async function get_Category_delete(req,res){

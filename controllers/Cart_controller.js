@@ -25,9 +25,9 @@ const { Cart} = require('../models')
 
 function get_Cart_update(req, res) {
     const { id } = req.params
-    const { User_id } = req.body
+    const { user_id } = req.body
     Cart.update(
-        {  User_id },
+        {  user_id },
         {
             where: { id }
         })

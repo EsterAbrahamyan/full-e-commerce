@@ -80,20 +80,19 @@ async function Users_register(req, res) {
     const hashed_password = await bcrypt.hash(password, salt);
 
     if (firstname !== "" && lastname !== "" && email !== "" && password !== "") {
-      const data = await Users.create({ firstname, lastname, email, password: hashed_password, role: "user",isverified:0 });
+      const data = await Users.create({ firstname, lastname, email, password: hashed_password, role: "user", isverified: 0 });
 
       // Call sendMail function to send verification email
-      let token = generateAccessToken(email,0);
-      sendMail(email,token);
-     
+      let token = generateAccessToken(email, 0);
+      sendMail(email, token);
 
-        return res.status(201).json(data);
-      
+      return res.status(201).json(data);
     }
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
 }
+
 
 
 function sendMail(mail, token) {
